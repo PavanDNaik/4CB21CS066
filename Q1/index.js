@@ -8,46 +8,47 @@ const {
   CATEGORIES,
 } = require("./contants");
 const { getProduct } = require("./retrieve");
+const fs = require("fs");
 const app = express();
 app.use(cors());
 const PORT = 5000;
 
-const ALL_PRODUCTS = [];
-try {
-  axios
-    .get(COMPANY_CATAGROY_PROUCT_URL, {
-      headers: {
-        Authorization: `Bearer ${TOKEN}`,
-      },
-    })
-    .then((data) => console.log(data))
-    .catch((e) => {
-      console.log(e);
-    });
-} catch (e) {
-  console.log(e);
-}
+let ALL_PRODUCTS = {};
+// try {
+//   axios
+//     .get(COMPANY_CATAGROY_PROUCT_URL, {
+//       headers: {
+//         Authorization: `Bearer ${TOKEN}`,
+//       },
+//     })
+//     .then((data) => console.log(data))
+//     .catch((e) => {
+//       console.log(e);
+//     });
+// } catch (e) {
+//   console.log(e);
+// }
 
 async function getAllData() {
   for (let i = 0; i < COMPANIES.length; i++) {
     for (let j = 0; j < CATEGORIES.length; j++) {
       const response = await getProduct(COMPANIES[i], CATEGORIES[j]);
       if (response && response.length) {
-        ALL_PRODUCTS = [...ALL_PRODUCTS, ...response];
+        if (!ALL_PRODUCTS[COMPANIES[i]]) {
+          ALL_PRODUCTS[COMPANIES[i]] = {};
+        }
+        ALL_PRODUCTS[COMPANIES[i]][CATEGORIES[j]] = response;
       }
     }
   }
 }
 
 (async () => {
-  await getAllData();
-  for (let i = 0; i < ALL_PRODUCTS.length; i++) {
-    ALL_PRODUCTS[i].productid = i;
-  }
+  getAllData().then(() => {
+    fs.writeFileSync("./product.json", JSON.stringify(ALL_PRODUCTS));
+  });
 })();
 
-console.log("---------------");
-console.log(ALL_PRODUCTS);
 app.get("/categories/:categoryname/products", async (req, res) => {
   const categoryname = req.params.categoryname;
   const n = req.query.n;
