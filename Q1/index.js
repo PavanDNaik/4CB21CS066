@@ -65,11 +65,11 @@ fs.readFile("./product.json",'utf8', (err, data) => {
 
 app.get("/categories/:categoryname/products", async (req, res) => {
   const categoryname = req.params.categoryname;
-  const n = req.query.n;
-  console.log(n);
+  let n = req.query.n;
+  let constraint = req.query.constraint;
+  if (!n) n = 10;
   let curCat = [];
   for (let i = 0; i < COMPANIES.length; i++) {
-      
     if (
       ALL_PRODUCTS[COMPANIES[i]] &&
       ALL_PRODUCTS[COMPANIES[i]][categoryname]
@@ -77,7 +77,14 @@ app.get("/categories/:categoryname/products", async (req, res) => {
       curCat = [...curCat, ...ALL_PRODUCTS[COMPANIES[i]][categoryname]];
     }
   }
-  res.json({ curCat });
+  curCat.sort((a, b) => {
+    return b[constraint] - a[constraint];
+  });
+  newArr = [];
+  for (let j = 0; j < n && j < curCat.length; j++) {
+    newArr.push(curCat[j]);
+  }
+  res.json({ newArr });
 });
 
 app.get("/categories/:categoryname/products/:productid", async (req, res) => {
