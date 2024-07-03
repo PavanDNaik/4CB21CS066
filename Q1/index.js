@@ -7,6 +7,7 @@ const {
   COMPANIES,
   CATEGORIES,
 } = require("./contants");
+const { getProduct } = require("./retrieve");
 const app = express();
 app.use(cors());
 const PORT = 5000;
@@ -27,24 +28,26 @@ try {
   console.log(e);
 }
 
-for (let i = 0; i < COMPANIES.length; i++) {
-  for (let j = 0; j < CATEGORIES.length; j++) {
-    getProduct(COMPANIES[i], CATEGORIES[j])
-      .then((response) => {
-        if (response && response.length) {
-          ALL_PRODUCTS = [...ALL_PRODUCTS, ...response];
-        }
-      })
-      .catch((e) => {
-        console.log(i + " " + j);
-      });
+async function getAllData() {
+  for (let i = 0; i < COMPANIES.length; i++) {
+    for (let j = 0; j < CATEGORIES.length; j++) {
+      const response = await getProduct(COMPANIES[i], CATEGORIES[j]);
+      if (response && response.length) {
+        ALL_PRODUCTS = [...ALL_PRODUCTS, ...response];
+      }
+    }
   }
 }
 
-for (let i = 0; i < ALL_PRODUCTS.length; i++) {
-  ALL_PRODUCTS[i].productid = i;
-}
+(async () => {
+  await getAllData();
+  for (let i = 0; i < ALL_PRODUCTS.length; i++) {
+    ALL_PRODUCTS[i].productid = i;
+  }
+})();
 
+console.log("---------------");
+console.log(ALL_PRODUCTS);
 app.get("/categories/:categoryname/products", async (req, res) => {
   const categoryname = req.params.categoryname;
   const n = req.query.n;
