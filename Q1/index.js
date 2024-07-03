@@ -29,11 +29,15 @@ let ALL_PRODUCTS = {};
 //   console.log(e);
 // }
 
+let k = 0;
 async function getAllData() {
   for (let i = 0; i < COMPANIES.length; i++) {
     for (let j = 0; j < CATEGORIES.length; j++) {
       const response = await getProduct(COMPANIES[i], CATEGORIES[j]);
       if (response && response.length) {
+        for (let l = 0; l < response.length; l++) {
+          response[i].productid = k++;
+        }
         if (!ALL_PRODUCTS[COMPANIES[i]]) {
           ALL_PRODUCTS[COMPANIES[i]] = {};
         }
@@ -46,6 +50,7 @@ async function getAllData() {
 (async () => {
   getAllData().then(() => {
     fs.writeFileSync("./product.json", JSON.stringify(ALL_PRODUCTS));
+    // fs.readFileSync();
   });
 })();
 
