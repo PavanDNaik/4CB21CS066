@@ -47,19 +47,37 @@ async function getAllData() {
   }
 }
 
-(async () => {
-  getAllData().then(() => {
-    fs.writeFileSync("./product.json", JSON.stringify(ALL_PRODUCTS));
-    // fs.readFileSync();
-  });
-})();
+// (async () => {
+//   getAllData().then(() => {
+//     fs.writeFileSync("./product.json", JSON.stringify(ALL_PRODUCTS));
+//     fs.readFileSync("./product.json", (err, data) => {
+//       ALL_PRODUCTS = data;
+//     });
+//   });
+// })();
+
+fs.readFile("./product.json",'utf8', (err, data) => {
+  if (data) {
+    ALL_PRODUCTS = JSON.parse(data);
+    return;
+  }
+}); 
 
 app.get("/categories/:categoryname/products", async (req, res) => {
   const categoryname = req.params.categoryname;
   const n = req.query.n;
   console.log(n);
-  console.log(categoryname);
-  res.json("hii");
+  let curCat = [];
+  for (let i = 0; i < COMPANIES.length; i++) {
+      
+    if (
+      ALL_PRODUCTS[COMPANIES[i]] &&
+      ALL_PRODUCTS[COMPANIES[i]][categoryname]
+    ) {
+      curCat = [...curCat, ...ALL_PRODUCTS[COMPANIES[i]][categoryname]];
+    }
+  }
+  res.json({ curCat });
 });
 
 app.get("/categories/:categoryname/products/:productid", async (req, res) => {
