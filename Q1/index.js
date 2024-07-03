@@ -1,11 +1,17 @@
 const express = require("express");
 const cors = require("cors");
 const { default: axios } = require("axios");
-const { COMPANY_CATAGROY_PROUCT_URL, TOKEN } = require("./contants");
+const {
+  COMPANY_CATAGROY_PROUCT_URL,
+  TOKEN,
+  COMPANIES,
+  CATEGORIES,
+} = require("./contants");
 const app = express();
 app.use(cors());
 const PORT = 5000;
 
+const ALL_PRODUCTS = [];
 try {
   axios
     .get(COMPANY_CATAGROY_PROUCT_URL, {
@@ -21,7 +27,25 @@ try {
   console.log(e);
 }
 
-app.get("/categories/:categoryname/products", (req, res) => {
+for (let i = 0; i < COMPANIES.length; i++) {
+  for (let j = 0; j < CATEGORIES.length; j++) {
+    getProduct(COMPANIES[i], CATEGORIES[j])
+      .then((response) => {
+        if (response && response.length) {
+          ALL_PRODUCTS = [...ALL_PRODUCTS, ...response];
+        }
+      })
+      .catch((e) => {
+        console.log(i + " " + j);
+      });
+  }
+}
+
+for (let i = 0; i < ALL_PRODUCTS.length; i++) {
+  ALL_PRODUCTS[i].productid = i;
+}
+
+app.get("/categories/:categoryname/products", async (req, res) => {
   const categoryname = req.params.categoryname;
   const n = req.query.n;
   console.log(n);
@@ -29,7 +53,7 @@ app.get("/categories/:categoryname/products", (req, res) => {
   res.json("hii");
 });
 
-app.get("/categories/:categoryname/products/:productid", (req, res) => {
+app.get("/categories/:categoryname/products/:productid", async (req, res) => {
   const { categoryname, productid } = req.params;
   const n = req.query.n;
   console.log(n);
